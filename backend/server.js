@@ -79,3 +79,8 @@ process.on('unhandledRejection',(err)=>{
     console.error(`Error: ${err.message}`);
     process.exit(1);
 })
+
+app.use(cors({
+  origin: "https://pdfstudy-ai.vercel.app",
+  credentials: true
+}));
