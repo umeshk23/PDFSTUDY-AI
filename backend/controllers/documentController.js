@@ -12,6 +12,23 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const resolveStoredDocumentPath = (document) => {
+    if (document.storagePath) {
+        return document.storagePath;
+    }
+
+    let filePathOnDisk = document.filepath;
+    if (filePathOnDisk.startsWith('http://') || filePathOnDisk.startsWith('https://')) {
+        filePathOnDisk = new URL(filePathOnDisk).pathname;
+    }
+
+    if (filePathOnDisk.startsWith('/')) {
+        filePathOnDisk = filePathOnDisk.slice(1);
+    }
+
+    return path.join(__dirname, '..', filePathOnDisk);
+};
+
 
 // @desc    Upload pdf document
 // @route   POST /api/documents/upload
@@ -32,14 +49,15 @@ export const uploadDocument = async (req, res, next) => {
        // construct document public path
        const fileUrl = `/uploads/documents/${req.file.filename}`;
 
-       const document = await Document.create({
-        userId: req.user._id,
-        title,
-        filename: req.file.originalname,
-        filepath: fileUrl,
-        filesize: req.file.size,
-        status: 'processing'
-       });
+        const document = await Document.create({
+         userId: req.user._id,
+         title,
+         filename: req.file.originalname,
+         filepath: fileUrl,
+         storagePath: req.file.path,
+         filesize: req.file.size,
+         status: 'processing'
+        });
 
          // process PDF in background 
         processPDF(document._id,req.file.path).catch(err=>{
@@ -172,22 +190,13 @@ export const getDocumentFile = async (req, res, next) => {
         const document = await Document.findOne({
             _id: req.params.id,
             userId: req.user._id
-        }).select('filepath filename title');
+        }).select('filepath filename title storagePath');
 
         if (!document) {
             return res.status(404).json({ success: false, error: 'Document not found', statusCode: 404 });
         }
 
-        let filePathOnDisk = document.filepath;
-        if (filePathOnDisk.startsWith('http://') || filePathOnDisk.startsWith('https://')) {
-            filePathOnDisk = new URL(filePathOnDisk).pathname;
-        }
-
-        if (filePathOnDisk.startsWith('/')) {
-            filePathOnDisk = filePathOnDisk.slice(1);
-        }
-
-        filePathOnDisk = path.join(__dirname, '..', filePathOnDisk);
+        const filePathOnDisk = resolveStoredDocumentPath(document);
 
         await fs.access(filePathOnDisk);
 
@@ -220,16 +229,7 @@ export const deleteDocument = async (req, res, next) => {
         }
 
         // delete file from file system
-        let filePathOnDisk = document.filepath;
-        if (filePathOnDisk.startsWith('http://') || filePathOnDisk.startsWith('https://')) {
-            filePathOnDisk = new URL(filePathOnDisk).pathname;
-        }
-
-        if (filePathOnDisk.startsWith('/')) {
-            filePathOnDisk = filePathOnDisk.slice(1);
-        }
-
-        filePathOnDisk = path.join(__dirname, '..', filePathOnDisk);
+        const filePathOnDisk = resolveStoredDocumentPath(document);
         await fs.unlink(filePathOnDisk).catch(() => {});
 
         await document.deleteOne();
@@ -243,4 +243,3 @@ export const deleteDocument = async (req, res, next) => {
         next(error);
     }
 }
-

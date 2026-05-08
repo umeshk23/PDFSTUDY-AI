@@ -38,8 +38,8 @@ const ProfilePage = () => {
   const handlePasswordSubmit = async (e) => {
     e.preventDefault()
 
-    if (passwords.newPassword.length < 6) {
-      toast.error('New password must be at least 6 characters')
+    if (passwords.newPassword.length < 8) {
+      toast.error('New password must be at least 8 characters')
       return
     }
 

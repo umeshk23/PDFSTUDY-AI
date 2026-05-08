@@ -40,7 +40,7 @@ export const generateFlashcards = async (req, res, next) => {
                 answer: card.answer,
                 difficulty: card.difficulty,
                 reviewCount: 0,
-                isStarted: false,
+                isStarred: false,
             }))
         });
 
@@ -91,7 +91,7 @@ export const generateQuiz = async (req, res, next) => {
             title: title || `Quiz for ${document.title}`,
             questions:questions,
             totalQuestions: questions.length,
-            userAnswers: [],
+            userAnswer: [],
             score: 0,
         });
 

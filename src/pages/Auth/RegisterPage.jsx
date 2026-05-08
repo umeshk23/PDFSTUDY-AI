@@ -102,7 +102,7 @@ const RegisterPage = () => {
                 <input
                   type="password"
                   className={`w-full rounded-xl border bg-white pl-11 pr-4 py-3 text-slate-900 placeholder:text-slate-300 shadow-sm transition focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 ${focusedField === 'password' ? 'border-emerald-500/60' : 'border-slate-200'}`}
-                  placeholder="At least 6 characters"
+                  placeholder="At least 8 characters"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   onFocus={() => setFocusedField('password')}
