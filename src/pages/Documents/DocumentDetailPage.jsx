@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import documentService from '../../services/documentService.js'
 import Spinner from '../../Components/common/Spinner.jsx'
@@ -6,11 +6,11 @@ import toast from 'react-hot-toast'
 import { ArrowLeft, ExternalLink } from 'lucide-react'
 import PageHeader from '../../Components/common/PageHeader.jsx'
 import Tabs from '../../Components/common/Tabs.jsx'
-import ChatInterface from '../../Components/chat/ChatInterface.jsx'
-import AiAction from '../../Components/ai/AiAction.jsx'
-import Flashcard from '../../Components/flashcard/Flashcard.jsx'
-import FlashcardManager from '../../Components/flashcard/FlashcardManager.jsx'
-import QuizManager from '../../Components/quizzes/QuizManager.jsx'
+
+const ChatInterface = lazy(() => import('../../Components/chat/ChatInterface.jsx'))
+const AiAction = lazy(() => import('../../Components/ai/AiAction.jsx'))
+const FlashcardManager = lazy(() => import('../../Components/flashcard/FlashcardManager.jsx'))
+const QuizManager = lazy(() => import('../../Components/quizzes/QuizManager.jsx'))
 
 
 const DocumentDetailPage = () => {
@@ -19,6 +19,7 @@ const DocumentDetailPage = () => {
   const [document, setDocument] = useState(null);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('content');
+  const [pdfUrl, setPdfUrl] = useState(null);
 
 
   useEffect(() => {
@@ -38,32 +39,49 @@ const DocumentDetailPage = () => {
     fetchDocumentDetails();
   }, [id]);
 
+  useEffect(() => {
+    let isMounted = true;
+    let objectUrl = null;
 
-  // Helper function to get the full pdf url
-  const getPdfUrl = () => {
-    if (!document?.data?.filepath) {
-      return null;
-    }
+    const fetchDocumentFile = async () => {
+      if (!document?.data?._id) {
+        setPdfUrl(null);
+        return;
+      }
 
-    const filePath = document.data.filepath;
-    
-    if (filePath.startsWith('http://') || filePath.startsWith('https://')) {
-      return filePath;
-    }
+      try {
+        const pdfBlob = await documentService.getDocumentFile(document.data._id);
+        objectUrl = URL.createObjectURL(pdfBlob);
+        if (isMounted) {
+          setPdfUrl(objectUrl);
+        }
+      } catch (error) {
+        console.error('Error fetching document file:', error);
+        toast.error(error.message || 'Failed to load the PDF preview');
+      }
+    };
 
-    const baseUrl = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000';
-    const fullUrl = `${baseUrl}/${filePath.startsWith('/') ? filePath.slice(1) : filePath}`;
-    return fullUrl;
-  };
+    fetchDocumentFile();
+
+    return () => {
+      isMounted = false;
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl);
+      }
+    };
+  }, [document?.data?._id]);
 
   const renderContent = () => {
-    if (!document || !document.data || !document.data.filepath) {
-      return <p className="text-center text-slate-600">PDF not available</p>;
+    if (!pdfUrl) {
+      return (
+        <div className="p-6 bg-white border border-slate-200 rounded-lg text-slate-600">
+          <p>No document PDF available.</p>
+        </div>
+      );
     }
-    const pdfUrl = getPdfUrl();
 
     return (
-      <div className='bg-white border border-gray-300 rounded-lg shadow-sm h-full min-h-0 flex flex-col overflow-hidden'>
+      <div className="bg-white border border-gray-300 rounded-lg shadow-sm h-full min-h-0 flex flex-col overflow-hidden">
         <div className="flex items-center justify-between gap-3 p-4 border-b border-slate-200 bg-slate-50/80 flex-shrink-0">
           <a
             href={pdfUrl}
@@ -81,7 +99,7 @@ const DocumentDetailPage = () => {
               src={pdfUrl}
               title="Document PDF"
               className="w-full h-full border-0"
-            ></iframe>
+            />
           </div>
         </div>
       </div>
@@ -91,26 +109,34 @@ const DocumentDetailPage = () => {
   const renderChat = () => {
     return (
       <div className="bg-white border border-gray-300 rounded-lg h-full min-h-0 overflow-hidden p-4 flex">
-        <ChatInterface />
+        <Suspense fallback={<Spinner />}>
+          <ChatInterface />
+        </Suspense>
       </div>
     );
   };
 
   const renderAIAction = () => {
     return (
-      <AiAction />
+      <Suspense fallback={<Spinner />}>
+        <AiAction />
+      </Suspense>
     );
   };
 
   const renderFlashcardTab = () => {
     return (
-      <FlashcardManager documentId={id} />
+      <Suspense fallback={<Spinner />}>
+        <FlashcardManager documentId={id} />
+      </Suspense>
     );
   };
 
   const renderQuizTab = () => {
     return (
-      <QuizManager documentId={id} />
+      <Suspense fallback={<Spinner />}>
+        <QuizManager documentId={id} />
+      </Suspense>
     );
   };
 

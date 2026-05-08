@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import {
   Plus,
   ChevronLeft,
@@ -7,7 +7,6 @@ import {
   ArrowLeft,
   Sparkles,
   Brain,
-
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import moment from 'moment'
@@ -30,7 +29,7 @@ const FlashcardManager = ({ documentId }) => {
   const [deleting, setDeleting] = useState(false);
   const [setToDelete, setSetToDelete] = useState(null);
 
-  const fetchFlashcardSets = async () => {
+  const fetchFlashcardSets = useCallback(async () => {
     setLoading(true);
     try {
       const res = await flashcardService.getFlashcardsForDocument(documentId);
@@ -42,18 +41,18 @@ const FlashcardManager = ({ documentId }) => {
     } finally {
       setLoading(false);
     }
-  }
+  }, [documentId]);
 
   useEffect(() => {
     if (documentId) {
       fetchFlashcardSets();
     }
-  }, [documentId]);
+  }, [documentId, fetchFlashcardSets]);
 
-  const handleGnerateFlashcards = async () => {
+  const handleGenerateFlashcards = async () => {
     setGenerating(true);
     try {
-      const res = await aiService.generateFlashcards(documentId);
+      await aiService.generateFlashcards(documentId);
       toast.success("Flashcards generated successfully");
       fetchFlashcardSets();
     } catch (error) {
@@ -213,7 +212,7 @@ const FlashcardManager = ({ documentId }) => {
             <p className="text-sm text-slate-600">Generate flashcards from your document to start learning and reinforce your knowledge.</p>
           </div>
           <button
-            onClick={handleGnerateFlashcards}
+            onClick={handleGenerateFlashcards}
             disabled={generating}
             className="mt-2 inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-white text-sm font-semibold shadow hover:bg-emerald-700 disabled:opacity-50"
           >
@@ -234,7 +233,7 @@ const FlashcardManager = ({ documentId }) => {
           </div>
           <div className='p-4'>
             <button
-              onClick={handleGnerateFlashcards}
+              onClick={handleGenerateFlashcards}
               disabled={generating}
               className=" inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-white text-sm font-semibold shadow hover:bg-emerald-700 disabled:opacity-50"
             >

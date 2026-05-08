@@ -1,4 +1,3 @@
-import React from 'react'
 
 // Lightweight spinner that matches the emerald accent used on auth forms
 const Spinner = ({ size = 'md', className = '' }) => {

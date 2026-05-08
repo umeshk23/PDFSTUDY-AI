@@ -20,12 +20,12 @@ export const getDashboard = async (req, res, next) => {
         const flashcardSets = await Flashcard.find({ userId });
         let totalFlashcardsReviewed = 0;
         let totalFlashcards = 0;
-        let staredFlashcards = 0;
+        let starredFlashcards = 0;
 
         flashcardSets.forEach(set => {
             totalFlashcards += set.cards.length;
             totalFlashcardsReviewed += set.cards.filter(card => card.reviewCount > 0).length;
-            staredFlashcards += set.cards.filter(card => card.isStarted).length;
+            starredFlashcards += set.cards.filter(card => card.isStarred).length;
         });
 
         // get the quiz statistics
@@ -39,8 +39,6 @@ export const getDashboard = async (req, res, next) => {
         const recentQuizzes = await Quiz.find({ userId }).sort({ createdAt: -1 }).limit(5).populate('documentId', 'title').select('title score totalQuestions completedAt');
 
         // study break ( simplifie - in produce , trakc daily activite )
-        const studyStrea = Math.floor(Math.random() * 30); // days
-
         res.status(200).json({
             success: true,
             data: {
@@ -49,11 +47,10 @@ export const getDashboard = async (req, res, next) => {
                     totalFlashcardSets,
                     totalFlashcards,
                     totalFlashcardsReviewed,
-                    staredFlashcards,
+                    starredFlashcards,
                     totalQuizzes,
                     completedQuizzes,
-                    averageScore,
-                    studyStrea
+                    averageScore
                 },
                 recentActivities: {
                     documents: recentDocuments,

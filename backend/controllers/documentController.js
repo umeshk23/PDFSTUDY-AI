@@ -1,11 +1,16 @@
 import Document from '../models/Document.js';
 import Flashcard from '../models/Flashcard.js';
 import Quiz from '../models/Quiz.js';
-import {extractTextFromPDF} from '../utils/pdfParser.js';
-import {chunkText} from '../utils/textChunker.js';
+import { extractTextFromPDF } from '../utils/pdfParser.js';
+import { chunkText } from '../utils/textChunker.js';
 
 import fs from 'fs/promises';
 import mongoose from 'mongoose';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 
 // @desc    Upload pdf document
@@ -24,19 +29,17 @@ export const uploadDocument = async (req, res, next) => {
         return res.status(400).json({ success: false, error: 'Title is required', statusCode: 400 });
        }
 
-       // construct document data
-       const baseUrl=`http://localhost:${process.env.PORT || 8000}`;
-       const fileUrl=`${baseUrl}/uploads/documents/${req.file.filename}`;
+       // construct document public path
+       const fileUrl = `/uploads/documents/${req.file.filename}`;
 
-       // create document record 
-       const document=await Document.create({
-        userId:req.user._id,
+       const document = await Document.create({
+        userId: req.user._id,
         title,
-        filename:req.file.originalname,
-        filepath:fileUrl,
-        filesize:req.file.size,
-        status:'processing'
-         });
+        filename: req.file.originalname,
+        filepath: fileUrl,
+        filesize: req.file.size,
+        status: 'processing'
+       });
 
          // process PDF in background 
         processPDF(document._id,req.file.path).catch(err=>{
@@ -161,6 +164,45 @@ export const getDocument = async (req, res, next) => {
     }
 }
 
+// @desc    Stream document file for the authenticated user
+// @route   GET /api/documents/:id/file
+// @access  Private
+export const getDocumentFile = async (req, res, next) => {
+    try {
+        const document = await Document.findOne({
+            _id: req.params.id,
+            userId: req.user._id
+        }).select('filepath filename title');
+
+        if (!document) {
+            return res.status(404).json({ success: false, error: 'Document not found', statusCode: 404 });
+        }
+
+        let filePathOnDisk = document.filepath;
+        if (filePathOnDisk.startsWith('http://') || filePathOnDisk.startsWith('https://')) {
+            filePathOnDisk = new URL(filePathOnDisk).pathname;
+        }
+
+        if (filePathOnDisk.startsWith('/')) {
+            filePathOnDisk = filePathOnDisk.slice(1);
+        }
+
+        filePathOnDisk = path.join(__dirname, '..', filePathOnDisk);
+
+        await fs.access(filePathOnDisk);
+
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `inline; filename="${encodeURIComponent(document.filename)}"`);
+        return res.sendFile(filePathOnDisk);
+    } catch (error) {
+        if (error.code === 'ENOENT') {
+            return res.status(404).json({ success: false, error: 'Document file not found', statusCode: 404 });
+        }
+
+        next(error);
+    }
+}
+
 
 
 // @desc    Delete document by ID
@@ -178,9 +220,18 @@ export const deleteDocument = async (req, res, next) => {
         }
 
         // delete file from file system
-        await fs.unlink(document.filepath).catch(()=>{});
+        let filePathOnDisk = document.filepath;
+        if (filePathOnDisk.startsWith('http://') || filePathOnDisk.startsWith('https://')) {
+            filePathOnDisk = new URL(filePathOnDisk).pathname;
+        }
 
-        //delete document
+        if (filePathOnDisk.startsWith('/')) {
+            filePathOnDisk = filePathOnDisk.slice(1);
+        }
+
+        filePathOnDisk = path.join(__dirname, '..', filePathOnDisk);
+        await fs.unlink(filePathOnDisk).catch(() => {});
+
         await document.deleteOne();
 
         res.status(200).json({
@@ -192,5 +243,4 @@ export const deleteDocument = async (req, res, next) => {
         next(error);
     }
 }
-
 

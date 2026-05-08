@@ -1,6 +1,5 @@
-import React from 'react'
 import { useNavigate } from 'react-router-dom'
-import { BookOpen, Sparkles, TrendingUp, Clock, BookMarked } from 'lucide-react'
+import { BookOpen, Sparkles, TrendingUp, BookMarked } from 'lucide-react'
 import moment from 'moment'
 
 const FlashcardSetCard = ({ flashcardSet }) => {

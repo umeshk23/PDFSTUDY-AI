@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { ArrowLeft, Plus, ChevronLeft, ChevronRight, Trash2 } from 'lucide-react'
 import toast from 'react-hot-toast'
@@ -24,7 +24,7 @@ const FlashcardPage = () => {
 
   const hasCards = useMemo(() => flashcards.length > 0, [flashcards])
 
-  const fetchFlashcards = async () => {
+  const fetchFlashcards = useCallback(async () => {
     setLoading(true)
     try {
       const res = await flashcardService.getFlashcardsForDocument(documentId)
@@ -37,11 +37,11 @@ const FlashcardPage = () => {
     } finally {
       setLoading(false)
     }
-  }
+  }, [documentId])
 
   useEffect(() => {
     if (documentId) fetchFlashcards()
-  }, [documentId])
+  }, [documentId, fetchFlashcards])
 
   const handleGenerateFlashcards = async () => {
     setGenerating(true)

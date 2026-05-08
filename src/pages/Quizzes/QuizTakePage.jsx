@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { ChevronLeft, ChevronRight, CheckCircle } from 'lucide-react'
 import quizService from '../../services/quizService.js'
@@ -152,7 +152,7 @@ const QuizTakePage = () => {
             {quiz.questions.map((question, index) => {
               const questionId = question?._id?.toString?.() ?? ''
               const isCurrent = index === currentQuestionIndex
-              const isAnswered = questionId && selectedAnswers.hasOwnProperty(questionId)
+              const isAnswered = questionId && questionId in selectedAnswers
               return (
                 <button
                   key={questionId || index}

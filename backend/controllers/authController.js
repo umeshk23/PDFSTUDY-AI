@@ -39,14 +39,22 @@ export const register = async (req, res, next) => {
             success: true,
             data: {
                 user:{
+                    id: user._id,
+                    username: user.username,
+                    email: user.email,
+                    profileImage: user.profileImage,
+                    createdAt: user.createdAt,
+                },
+                token
+            },
+            user: {
                 id: user._id,
                 username: user.username,
                 email: user.email,
                 profileImage: user.profileImage,
                 createdAt: user.createdAt,
-                },
-                token
             },
+            token,
             message: 'User registered successfully',
         });
 
@@ -95,13 +103,22 @@ export const login = async (req, res, next) => {
 
         res.status(200).json({
             success: true,
+            data: {
+                user: {
+                    id: user._id,
+                    username: user.username,
+                    email: user.email,
+                    profileImage: user.profileImage,
+                },
+                token,
+            },
             user:{
                 id: user._id,
                 username: user.username,
                 email: user.email,
                 profileImage: user.profileImage,
-            
-            },token,
+            },
+            token,
             message: 'User logged in successfully'
         }); 
 

@@ -28,7 +28,7 @@ const login = async (email, password) => {
 			email,
 			password,
 		});
-		return res.data;
+		return res.data.data || res.data;
 	} catch (error) {
 		throw formatError(error);
 	}

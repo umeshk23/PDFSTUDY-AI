@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { Sparkles, BookOpen, Lightbulb, Loader2 } from 'lucide-react'
 import aiService from '../../services/aiService.js'

@@ -31,6 +31,14 @@ JWT_EXPIRES_IN=7d
 MAX_FILE_SIZE=10485760
 PORT=8000
 NODE_ENV=development
+CLIENT_URL=http://localhost:5173
+UPLOAD_DIR=backend/uploads/documents
+```
+
+Create a frontend `.env` file in the project root when running against a non-default API:
+
+```bash
+VITE_API_BASE_URL=http://localhost:8000
 ```
 
 ## Run locally
@@ -63,3 +71,5 @@ NODE_ENV=development
 - Build the frontend with `npm run build` and deploy it as a static site.
 - Use MongoDB Atlas or another hosted MongoDB service for production storage.
 - Point the frontend to the deployed backend API endpoint.
+- For Render, use the provided `render.yaml` and keep `UPLOAD_DIR` on the mounted persistent disk.
+- For Vercel, set `VITE_API_BASE_URL=https://pdfstudyai.onrender.com` in the project environment variables.

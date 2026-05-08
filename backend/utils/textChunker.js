@@ -55,8 +55,7 @@ export const chunkText = (text, chunkSize = 500, overlap = 50) => {
 
         // if adding this paragraph exceeds chunk size, finalize current chunk
         if (currentWordCount + paragrahWordCount > chunkSize && currentChunk.length > 0) {
-            chunks.push
-                ({
+            chunks.push({
                     content: currentChunk.join('\n\n'),
                     chunkIndex: chunkIndex++,
                     pageNumber: 0

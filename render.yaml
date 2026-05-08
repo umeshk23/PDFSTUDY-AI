@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: pdfstudyai-backend
+    runtime: node
+    plan: starter
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 8000
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: MAX_FILE_SIZE
+        value: 10485760
+      - key: CLIENT_URL
+        value: https://pdfstudy-ai.vercel.app
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: UPLOAD_DIR
+        value: /var/data/pdfstudy-uploads/documents
+    disks:
+      - name: pdfstudy-uploads
+        mountPath: /var/data/pdfstudy-uploads
+        sizeGB: 5

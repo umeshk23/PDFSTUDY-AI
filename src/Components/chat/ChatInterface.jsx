@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Send, MessageSquare, Sparkles, Loader2 } from 'lucide-react'
 import { useParams } from 'react-router-dom'
 import aiService from '../../services/aiService.js'
@@ -25,7 +25,7 @@ const ChatInterface = () => {
                 setInitialLoading(true)
                 const response = await aiService.getChatHistory(documentId)
                 // API returns { success, data: messages }
-                setHistory(response.data || [])
+                setHistory(response || [])
             } catch (error) {
                 // If no history yet, start empty instead of blocking the UI
                 if (error?.status === 404) {
@@ -63,9 +63,9 @@ const ChatInterface = () => {
             const response = await aiService.chat(documentId, userMessage.content)
             const assistantMessage = {
                 role: 'assistant',
-                content: response.data.answer,
+                content: response.answer,
                 timestamp: new Date(),
-                relativeChunks: response.data.relativeChunks,
+                relevantChunks: response.relevantChunks,
             }
             setHistory((prev) => [...prev, assistantMessage])
         } catch (error) {

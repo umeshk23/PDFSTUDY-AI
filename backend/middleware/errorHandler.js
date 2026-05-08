@@ -1,6 +1,5 @@
-import { error } from "console";
-
 const errorHandler = (err, req, res, next) => {
+    void next;
     let statustCode = err.statusCode || 500;
     let message = err.message || 'Internal Server Error';
 
@@ -32,6 +31,11 @@ const errorHandler = (err, req, res, next) => {
     // jwt error
     if(err.name === 'JsonWebTokenError'){
         message = 'Invalid token. Please log in again';
+        statustCode = 401;
+    }
+
+    if (err.name === 'TokenExpiredError') {
+        message = 'Token expired. Please log in again';
         statustCode = 401;
     }
     

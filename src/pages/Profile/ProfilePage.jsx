@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Mail, User, Lock } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useAuth } from '../../context/AuthContext'
@@ -33,7 +33,7 @@ const ProfilePage = () => {
     }
 
     fetchProfile()
-  }, [])
+  }, [user?.email, user?.username, updateUser])
 
   const handlePasswordSubmit = async (e) => {
     e.preventDefault()

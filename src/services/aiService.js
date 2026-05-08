@@ -50,9 +50,8 @@ const chat = async (documentId, message) => {
 		const res = await axiosInstance.post(API_PATHS.AI.CHAT, {
 			documentId,
 			question: message,
-	
 		});
-		return res.data;
+		return res.data.data;
 	} catch (error) {
 		throw formatError(error);
 	}
@@ -74,7 +73,7 @@ const explainConcept = async (documentId, concept) => {
 const getChatHistory = async (documentId) => {
 	try {
 		const res = await axiosInstance.get(API_PATHS.AI.GET_CHAT_HISTORY(documentId));
-		return res.data;
+		return res.data.data;
 	} catch (error) {
 		throw formatError(error);
 	}
