@@ -16,6 +16,27 @@ import progressRoutes from './routes/progressRoutes.js';
 
 const app = express();
 
+const normalizeOrigin = (origin) => origin.trim().replace(/\/+$/, '');
+
+const buildAllowedOrigins = () => {
+    const configuredOrigins = [
+        process.env.CLIENT_URL,
+        process.env.FRONTEND_URL,
+        process.env.APP_URL,
+        process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null,
+        process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : null,
+        process.env.NODE_ENV === 'production' ? 'https://pdfstudy-ai.vercel.app' : 'http://localhost:5173',
+    ];
+
+    return [...new Set(
+        configuredOrigins
+            .filter(Boolean)
+            .flatMap((value) => value.split(','))
+            .map((origin) => normalizeOrigin(origin))
+            .filter(Boolean)
+    )];
+};
+
 const normalizeEnv = () => {
     process.env.NODE_ENV = process.env.NODE_ENV || 'development';
     process.env.JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || process.env.JWT_EXPIRE || '7d';
@@ -53,16 +74,20 @@ app.use(helmet({
     xFrameOptions: false,
 }));
 
-const allowedOrigins = process.env.CLIENT_URL
-    ? process.env.CLIENT_URL.split(',').map((origin) => origin.trim()).filter(Boolean)
-    : ['http://localhost:5173'];
+const allowedOrigins = buildAllowedOrigins();
 
 const corsOptions = {
     origin: (origin, callback) => {
-        if (!origin || allowedOrigins.includes(origin)) {
+        if (!origin) {
             return callback(null, true);
         }
-        return callback(new Error('Not allowed by CORS'));
+
+        const normalizedRequestOrigin = normalizeOrigin(origin);
+        if (allowedOrigins.includes(normalizedRequestOrigin)) {
+            return callback(null, true);
+        }
+
+        return callback(new Error(`Not allowed by CORS: ${normalizedRequestOrigin}`));
     },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
