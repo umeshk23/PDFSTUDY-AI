@@ -59,6 +59,10 @@ export const register = async (req, res, next) => {
         });
 
     }catch (error) {
+        console.error('Auth register error:', {
+            message: error.message,
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
+        });
         next(error);
     }
 };
@@ -123,6 +127,10 @@ export const login = async (req, res, next) => {
         }); 
 
     }catch (error) {
+        console.error('Auth login error:', {
+            message: error.message,
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
+        });
         next(error);
     }
 }

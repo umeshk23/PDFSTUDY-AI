@@ -20,7 +20,7 @@ const userSchema=new mongoose.Schema({
     password:{
         type:String,
         required:[true,'Password is required'],
-        minlength:[6,'Password must be at least 6 characters long'],
+        minlength:[8,'Password must be at least 8 characters long'],
         select:false //do not return password field by default
     },
     profileImage:{
@@ -32,15 +32,15 @@ const userSchema=new mongoose.Schema({
     timestamps:true
 });
 
-// hash password before saving
-userSchema.pre('save',async function(next){
-    if(!this.isModified('password')){
-        return next();
+// Use promise-based middleware only. Mixing async hooks with callback-style next()
+// can produce "next is not a function" in newer Mongoose versions during signup.
+userSchema.pre('save', async function () {
+    if (!this.isModified('password')) {
+        return;
     }
 
-    const salt=await bcrypt.genSalt(10);
-    this.password=await bcrypt.hash(this.password,salt);
-    next();
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
 });
 
 // Compare passwords method
