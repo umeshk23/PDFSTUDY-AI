@@ -1,6 +1,7 @@
 # PDFStudy AI (MERN)
 
-A full-stack AI-powered tool for document-based studying, built with React, Vite, Express, and MongoDB.
+A full-stack AI-powered tool for document-based studying, built with React, Vite, Express, and MongoDB. 
+
 
 ## What this project includes
 - AI chat that uses user documents and saved chat history
